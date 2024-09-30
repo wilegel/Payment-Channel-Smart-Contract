@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract PaymentChannel {
+    address payable public sender;
+    address payable public recipient;
+    uint public expiration;
+
+    constructor(address payable _recipient, uint _duration) payable {
+        sender = payable(msg.sender);
+        recipient = _recipient;
+        expiration = block.timestamp + _duration;
+    }
+
+    function claimPayment(uint amount, bytes memory signature) public {
+        require(msg.sender == recipient, "Not the recipient");
+        require(isValidSignature(amount, signature), "Invalid signature");
+        recipient.transfer(amount);
+    }
+
+    function isValidSignature(uint amount, bytes memory signature) public view returns (bool) {
+        // Signature verification logic
+        return true; // Simplified for the sake of the example
+    }
+
+    function refund() public {
+        require(msg.sender == sender, "Not the sender");
+        require(block.timestamp >= expiration, "Channel not expired");
+        sender.transfer(address(this).balance);
+    }
+
+    receive() external payable {}
+}
